@@ -1,0 +1,192 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct Voiture {
+    int id;
+    char marque[50];
+    char modele[50];
+    char etat[20];
+};
+
+struct Location {
+    int idVoiture;
+    int jour;
+    int mois;
+    int annee;
+};
+
+struct Voiture *voitures = NULL;
+struct Location *historiqueLocations = NULL;
+int nbVoitures = 0;
+int nbLocations = 0;
+#define MAX_LOCATIONS 100
+
+void enregistrerNouvelleLocation(int idVoiture, int jour, int mois, int annee) {
+    if (nbLocations < MAX_LOCATIONS) {
+        historiqueLocations[nbLocations].idVoiture = idVoiture;
+        historiqueLocations[nbLocations].jour = jour;
+        historiqueLocations[nbLocations].mois = mois;
+        historiqueLocations[nbLocations].annee = annee;
+        nbLocations++;
+    } else {
+        printf("L'historique des locations est plein, impossible d'ajouter une nouvelle location.\n");
+    }
+}
+
+void afficherVoituresDisponibles() {
+    printf("Voitures disponibles :\n");
+    for (int i = 0; i < nbVoitures; ++i) {
+        if (strcmp(voitures[i].etat, "Disponible") == 0) {
+            printf("ID : %d, Marque : %s, Modele : %s, Etat : %s\n", voitures[i].id, voitures[i].marque, voitures[i].modele, voitures[i].etat);
+        }
+    }
+}
+
+void louerVoiture() {
+    int idVoiture;
+    printf("Entrez l'ID de la voiture à louer : ");
+    scanf("%d", &idVoiture);
+
+    for (int i = 0; i < nbVoitures; ++i) {
+        if (voitures[i].id == idVoiture && strcmp(voitures[i].etat, "Disponible") == 0) {
+            strcpy(voitures[i].etat, "En location");
+            printf("Voiture louée avec succès.\n");
+            enregistrerNouvelleLocation(idVoiture, 29, 12, 2023); // Exemple de date, à adapter selon la logique souhaitée
+            return;
+        }
+    }
+    printf("La voiture demandée n'est pas disponible.\n");
+}
+
+void supprimerVoitureEnPanne() {
+    int idPanne;
+    printf("Entrez l'ID de la voiture en panne à supprimer : ");
+    scanf("%d", &idPanne);
+
+    for (int i = 0; i < nbVoitures; ++i) {
+        if (voitures[i].id == idPanne && strcmp(voitures[i].etat, "En panne") == 0) {
+            for (int j = i; j < nbVoitures - 1; ++j) {
+                voitures[j] = voitures[j + 1];
+            }
+            nbVoitures--;
+            printf("Voiture en panne supprimée avec succès.\n");
+            return;
+        }
+    }
+    printf("Aucune voiture en panne avec cet ID n'a été trouvée.\n");
+}
+
+void modifierVoiture() {
+    int idModif;
+    printf("Entrez l'ID de la voiture à modifier : ");
+    scanf("%d", &idModif);
+
+    for (int i = 0; i < nbVoitures; ++i) {
+        if (voitures[i].id == idModif) {
+            printf("Entrez la nouvelle marque : ");
+            scanf("%s", voitures[i].marque);
+
+            printf("Entrez le nouveau modèle : ");
+            scanf("%s", voitures[i].modele);
+
+            printf("Entrez le nouvel état : ");
+            scanf("%s", voitures[i].etat);
+
+            printf("La voiture a été modifiée avec succès.\n");
+            return;
+        }
+    }
+    printf("Aucune voiture avec cet ID n'a été trouvée.\n");
+}
+
+void afficherHistoriqueLocations() {
+    printf("Historique des locations :\n");
+    for (int i = 0; i < nbLocations; ++i) {
+        printf("Location %d : ID Voiture : %d, Date : %d/%d/%d\n", i + 1, historiqueLocations[i].idVoiture,
+               historiqueLocations[i].jour, historiqueLocations[i].mois, historiqueLocations[i].annee);
+    }
+}
+
+
+
+int main() {
+    voitures = (struct Voiture *)malloc(10 * sizeof(struct Voiture));
+    historiqueLocations = (struct Location *)malloc(50 * sizeof(struct Location));
+
+    if (voitures == NULL || historiqueLocations == NULL) {
+        printf("Erreur d'allocation de mémoire.\n");
+        return -1;
+    }
+
+    int choix;
+    do {
+        printf("=== Gestionnaire de voitures ===\n");
+        printf("1. Ajouter une voiture\n");
+        printf("2. Afficher les voitures disponibles\n");
+        printf("3. Louer une voiture\n");
+        printf("4. Supprimer une voiture en panne\n");
+        printf("5. Modifier une voiture\n");
+        printf("6. Afficher l'historique des locations\n");
+        printf("7. Quitter\n");
+        printf("Entrez votre choix : ");
+        scanf("%d", &choix);
+
+        switch (choix) {
+            case 1: {
+                if (nbVoitures < 10) {
+                    printf("Ajout d'une nouvelle voiture :\n");
+                    printf("ID : ");
+                    scanf("%d", &voitures[nbVoitures].id);
+
+                    printf("Marque : ");
+                    scanf("%s", voitures[nbVoitures].marque);
+
+                    printf("Modèle : ");
+                    scanf("%s", voitures[nbVoitures].modele);
+
+                    printf("État : ");
+                    scanf("%s", voitures[nbVoitures].etat);
+
+                    nbVoitures++;
+                } else {
+                    printf("Le nombre maximum de voitures est atteint.\n");
+                }
+                break;
+            }
+            case 2: {
+                afficherVoituresDisponibles();
+                break;
+            }
+            case 3: {
+                louerVoiture();
+                break;
+            }
+            case 4: {
+                supprimerVoitureEnPanne();
+                break;
+            }
+            case 5: {
+                modifierVoiture();
+                break;
+            }
+            case 6: {
+                afficherHistoriqueLocations();
+                break;
+            }
+            case 7: {
+                printf("Programme terminé.\n");
+                break;
+            }
+            default: {
+                printf("Choix invalide. Veuillez réessayer.\n");
+                break;
+            }
+        }
+    } while (choix != 7);
+
+    free(voitures);
+    free(historiqueLocations);
+
+    return 0;
+}
